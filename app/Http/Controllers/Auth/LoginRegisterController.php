@@ -1,74 +1,86 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class LoginRegisterController extends Controller
 {
-    public function register()
+    public function index()
     {
-        return view('auth.register');
+        return view('admin.akun.index');  // Menampilkan form pendaftaran
     }
+
+    public function create()
+    {
+        return view('auth.register');  // Menampilkan form pendaftaran
+    }
+
     public function store(Request $request)
     {
+        // Validasi data yang masuk
         $request->validate([
             'name' => 'required|string|max:250',
             'email' => 'required|email|max:250|unique:users',
-            'password' => 'required|min:8|confirmed'
+            'password' => 'required|min:8|confirmed',
         ]);
-
-        User::create([
+        
+        // Membuat user baru
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'usertype' => 'admin'
+            'usertype' => 'admin'  // Menetapkan usertype default sebagai 'admin'
         ]);
-        $credentials = $request->only('email', 'password');
-        Auth::attempt($credentials);
+
+        // Login otomatis setelah pendaftaran
+        Auth::login($user);
         $request->session()->regenerate();
 
-        if ($request->user()->usertype == 'admin') {
-            return redirect('admin/dashboard')->withSuccess('You have successfully registered & logged in!');
-        }
-
-        return redirect()->intended(route('dashboard'));
+        // Mengarahkan sesuai usertype
+        return $request->user()->usertype == 'admin'
+            ? redirect('admin/dashboard')->with('success', 'You have successfully registered & logged in!')
+            : redirect()->intended(route('dashboard'));
     }
 
     public function login()
     {
-       return view ('auth.register');
+        return view('auth.login');  // Menampilkan form login
     }
 
     public function authenticate(Request $request)
     {
-     $credentials = $request->validate([
+        // Validasi login
+        $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-        if ($request->user()->usertype == 'admin') {
-            return redirect('admin/dashboard')->withSuccess('You have succesfukky logged in!');
-        }
-    }
+        // Cek kredensial dan login
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-    return back()->withError([
-        'email' => 'Your provided credentials do not match in pur records.',
-    ])->onlyinput('email');
+            return $request->user()->usertype == 'admin'
+                ? redirect('admin/dashboard')->with('success', 'You have successfully logged in!')
+                : redirect()->intended(route('dashboard'));
+        }
+
+        // Mengembalikan error jika kredensial tidak valid
+        return back()->withErrors(['email' => 'The provided credentials do not match our records.'])
+                    ->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
+        // Proses logout
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login')
-             ->withSuccess('You have logged out successfully!');;
+
+        return redirect()->route('login')->with('success', 'You have logged out successfully!');
     }
 }

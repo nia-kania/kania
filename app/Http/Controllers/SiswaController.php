@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Hash;
 
 class SiswaController extends Controller
 {
-    public function index():View{
+    public function index():View
+    {
         $siswas = DB::table('siswas')
         ->join('users','siswas.id_user','=','users.id')
         ->select(
