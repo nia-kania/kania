@@ -1,50 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Tambah Akun</title>
-</head>
+@extends('auth.layouts')
 
-<body>
-  <h1>Tambah User</h1>
-  <br><br>
+@section('content')
+    <h1>Register</h1>
+    <a href="{{ route('login') }}">Login</a>
+    <br><br>
+    <form action="{{ route('store') }}" method="POST">
+        @csrf
 
-  <a href="{{ route('admin.dashboard') }}">Kembali</a><br><br>
+        <label>Nama Lengkap</label><br>
+        <input type="text" id="name" name="name" value="{{ old('name') }}"><br>
 
-  @if ($errors->any())
-  <div class="alert alert-danger">
-    <ul>
-      @foreach ($errors->all() as $error)
-      <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
-  @endif
+        @if ($errors->has('name'))
+            <span class="text-danger">{{ $errors->first('name') }}</span>
+        @endif
 
-  <form action="{{ route('akun.store') }}" method="POST">
-    @csrf
-    <label for="name">Nama Lengkap</label><br>
-    <input type="text" id="name" name="name" value="{{ old('name') }}"><br><br>
+        <br>
 
-    <label for="email">Email Address</label><br>
-    <input type="email" id="email" name="email" value="{{ old('email') }}"><br><br>
+        <label>Email Address</label><br>
+        <input type="email" id="email" name="email" value="{{ old('email') }}"><br>
 
-    <label for="password">Password</label><br>
-    <input type="password" id="password" name="password"><br><br>
+        @if ($errors->has('email'))
+            <span class="text-danger">{{ $errors->first('email') }}</span>
+        @endif
 
-    <label for="password_confirmation">Confirm Password</label><br>
-    <input type="password" id="password_confirmation" name="password_confirmation"><br><br>
+        <br>
 
-    <label for="usertype">Hak Akses</label><br>
-    <select name="usertype" id="usertype" required>
-      <option value="">Pilih Hak Akses</option>
-      <option value="admin" {{ old('usertype') == 'admin' ? 'selected' : '' }}>Admin</option>
-      <option value="ptk" {{ old('usertype') == 'ptk' ? 'selected' : '' }}>PTK</option>
-    </select><br><br>
+        <label>Password</label><br>
+        <input type="password" id="password" name="password"><br>
 
-    <input type="submit" value="Register">
-  </form>
-</body>
-</html>
+        @if ($errors->has('password'))
+        <span class="text-danger">{{ $errors->first('password') }}</span>
+        @endif
+
+        <br>
+        <label for="password_confirmation" class="col-md-form-label text-md-end text-start">Confirm Password</label>
+        <div class="=col-md-6">
+          <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+        </div>
+        <input type="submit" value="Register">
+</form>
+@endsection

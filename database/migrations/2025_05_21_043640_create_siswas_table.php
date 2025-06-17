@@ -20,9 +20,8 @@ return new class extends Migration
             $table->string('jurusan');
             $table->string('kelas');
             $table->bigInteger('hp');
-            $table->integer('status'); //0=tidak aktif 1=aktif
+            $table->integer('status'); // 0=tidak aktif 1=aktif
             $table->timestamps();
-
         });
     }
 

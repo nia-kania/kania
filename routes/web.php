@@ -1,49 +1,45 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginRegisterController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\PelanggaranController;
+use App\Http\Controllers\PelanggarController;
+use App\Http\Controllers\DetailPelanggaranController;
 
-// Rute halaman utama
+
+// Rute untuk halaman utama
 Route::get('/', function () {
-    return view('welcome');
+    return view('/auth/login');
 });
 
-// Rute untuk pengguna yang sudah login sebagai admin
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [LoginRegisterController::class, 'register'])->name('register'); // ✅ HARUS ADA
+    Route::post('/store', [LoginRegisterController::class, 'store'])->name('store');
+    Route::get('/login', [LoginRegisterController::class, 'login'])->name('login');
+    Route::post('/authenticate', [LoginRegisterController::class, 'authenticate'])->name('authenticate');
+});
+
+
+// Group routes untuk yang sudah login dan role admin
 Route::middleware(['auth', 'admin'])->group(function () {
-  // Rute untuk dashboard admin
-  Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+     Route::get('admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::resource('/admin/siswa', SiswaController::class);
+    Route::resource('/admin/akun', LoginRegisterController::class);
+    Route::put('/updateEmail/{akun}', [LoginRegisterController::class, 'updateEmail'])->name('updateEmail');
+    Route::put('/updatePassword/{akun}', [LoginRegisterController::class, 'updatePassword'])->name('updatePassword');
+    Route::resource('/admin/pelanggaran', PelanggaranController::class);
+    //Route::get('admin/pelanggaran', [PelanggaranController::class, 'index'])->name('pelanggaran');
+    Route::get('/pelanggaran/{id}/edit', [PelanggaranController::class, 'edit'])->name('pelanggaran.edit');
+    Route::resource('/admin/pelanggar', PelanggarController::class);
+    Route::post('/admin/pelanggar/storePelanggaran', [PelanggarController::class, 'storePelanggaran'])->name('pelanggar.storePelanggaran');
+    Route::put('/admin/pelanggar/statusTindak/{akun}', [PelanggarController::class, 'statusTindak'])->name('pelanggar.statusTindak');
+    Route::post('/logout', [LoginRegisterController::class, 'logout'])->name('logout');
+});
 
-  // Rute untuk menampilkan daftar akun
-  Route::get('admin/akun', [LoginRegisterController::class, 'index'])->name('akun.index');
-
-  // Rute untuk form tambah akun
-  Route::get('admin/akun/create', [LoginRegisterController::class, 'create'])->name('akun.create');
-
-  // Rute untuk menyimpan akun baru
-  Route::post('admin/akun', [LoginRegisterController::class, 'store'])->name('akun.store');
-
-  // Rute untuk edit akun
-  Route::get('admin/akun/{akun}/edit', [LoginRegisterController::class, 'edit'])->name('akun.edit');
-  Route::put('admin/akun/{akun}', [LoginRegisterController::class, 'update'])->name('akun.update');
-
-  // Rute untuk menghapus akun
-  Route::delete('admin/akun/{akun}', [LoginRegisterController::class, 'destroy'])->name('akun.destroy');
-
-  // Rute untuk daftar siswa
-  Route::get('admin/siswa', [SiswaController::class, 'index'])->name('siswa.index');
-
-  // Rute untuk tambah siswa
-  Route::get('admin/siswa/create', [SiswaController::class, 'create'])->name('siswa.create');
-  Route::post('admin/siswa', [SiswaController::class, 'store'])->name('siswa.store');
-
-  // Rute untuk edit siswa
-  Route::get('admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])->name('siswa.edit');
-  Route::put('admin/siswa/{siswa}', [SiswaController::class, 'update'])->name('siswa.update');
-
-  // Rute untuk menghapus siswa
-  Route::delete('admin/siswa/{siswa}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
-
-  // Rute untuk logout
-  Route::post('logout', [LoginRegisterController::class, 'logout'])->name('logout');
+// Rute untuk Dashboard (user yang sudah login)
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
